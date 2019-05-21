@@ -79,9 +79,9 @@ class NGramModel(object):
                 self.nGramPdf[ngramKey][domainTopicKey].append((float(ngramCount) / totalCount, ngram[-1]))
                 self.nGramProb[ngram] += float(ngramCount) / totalCount
 
-    def countNgrams(self, newsSource, baseDir="."):
+    def countNgrams(self, baseDir="."):
         # File path is <newSource>/<*topic*.json>
-        self.dataDir = os.path.join(baseDir, newsSource)
+        self.dataDir = baseDir
         self._count()
 
     def generateModel(self):
