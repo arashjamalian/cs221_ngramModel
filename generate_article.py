@@ -10,9 +10,6 @@ from models.ngram_model import NGramModel
 from lib.util import CONST_END_WORD
 from lib.util import computePerplexity
 
-import sys
-sys.path.append('../')
-
 FORMAT = "%(asctime)s: %(name)s:%(lineno)d (%(process)d/%(threadName)s) - %(levelname)s - %(message)s"
 logging.basicConfig(level=logging.INFO, format=FORMAT)
 logger = logging.getLogger(__name__)
@@ -63,7 +60,7 @@ for _ in range(maxLength):
     cState = mv.generate(cState)
     cWord = cState[-1]
     if cWord == CONST_END_WORD:
-        logger.info("reached end of the article")
+        logger.debug("reached end of the article")
         break
 
     article.append(cState[-1])
@@ -85,7 +82,7 @@ if args.perplexity:
                     articleText = cData.get("article", None)
                     pvaluesList.append(computePerplexity(articleText, ng))
 
-    logger.info("pvaluesList: %s" % pvaluesList)
+    logger.debug("pvaluesList: %s" % pvaluesList)
     logger.info("max perplexity: %s" % max(pvaluesList))
     logger.info("mean perplexity: %s" % (sum(pvaluesList)/len(pvaluesList)))
     logger.info("min perplexity: %s" % min(pvaluesList))
