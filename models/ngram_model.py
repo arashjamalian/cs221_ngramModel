@@ -88,5 +88,4 @@ class NGramModel(object):
     def generateModel(self):
         self._nGramProb()
         return self.nGramPdf
-        #return math.log(totalCount + VOCAB_SIZE) - math.log(ngramCount + 1)
 
