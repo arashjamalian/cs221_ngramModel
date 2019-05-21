@@ -1,6 +1,8 @@
-from util import CONST_START_WORD
-from util import weightSample
+from lib.util import CONST_START_WORD
+from lib.util import weightSample
+import logging
 
+logger = logging.getLogger(__name__)
 
 class MarkovModel(object):
     def __init__(self, nGramModel, windowSize, domain, topic):
@@ -17,7 +19,6 @@ class MarkovModel(object):
         # for the ngram only in ngrams from same domain/topic.
         # If the model does is not trained for the speicifed domain/topic,
         # we use the full ngram list.
-
         biasedWeights = {}
         totalWeights = 0.0
         for currWord, (weight, cDomainTopic) in weightDict.items():

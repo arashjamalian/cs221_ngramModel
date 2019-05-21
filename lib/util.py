@@ -1,9 +1,8 @@
-
-
 import random
 
 CONST_START_WORD = "__s__"
 CONST_END_WORD = "__e__"
+
 
 # Sliding function (borrowed from hw3)
 def sliding(xs, windowSize):

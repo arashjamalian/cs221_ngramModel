@@ -1,10 +1,12 @@
-
-
 import os
 import collections
 import json
-from util import CONST_END_WORD
-from util import sliding, ngramWindow
+from lib.util import CONST_END_WORD
+from lib.util import sliding, ngramWindow
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class NGramModel(object):
@@ -33,7 +35,7 @@ class NGramModel(object):
 
                 if filename.endswith('.json'):
                     fullName = os.path.join(currDir, filename)
-                    #print("filename : %s" % fullName)
+                    logger.debug("filename : %s" % fullName)
                     with open(fullName, "r") as f:
                         cData = json.load(f)
                         articleText = cData.get("article", None)
@@ -41,11 +43,11 @@ class NGramModel(object):
                         topic = cData.get("theme", None)
                         domainTopicKey = (domain, topic)
                         if not articleText:
-                            print("%s skipped" % filename)
+                            logger.warning("%s skipped" % filename)
                             continue
 
                     textList = articleText.strip().split(" ")
-                    #print("textList : %s" % textList)
+                    logger.debug("textList : %s" % textList)
                     ngramList = [ngramWindow(wordSeg, self.windowSize) for wordSeg in sliding(textList, self.windowSize)]
                     # Add last words
                     prevWord = list(ngramList[-1])
@@ -80,7 +82,6 @@ class NGramModel(object):
                 self.nGramProb[ngram] += float(ngramCount) / totalCount
 
     def countNgrams(self, baseDir="."):
-        # File path is <newSource>/<*topic*.json>
         self.dataDir = baseDir
         self._count()
 

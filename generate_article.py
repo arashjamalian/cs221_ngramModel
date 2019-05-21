@@ -1,12 +1,22 @@
 #!/usr/bin/env python3.4
 
-from argparse import ArgumentParser
-from markov_model import MarkovModel
-from ngram_model import NGramModel
-from util import CONST_END_WORD
-from util import computePerplexity
 import os
 import json
+import logging
+
+from argparse import ArgumentParser
+from models.markov_model import MarkovModel
+from models.ngram_model import NGramModel
+from lib.util import CONST_END_WORD
+from lib.util import computePerplexity
+
+import sys
+sys.path.append('../')
+
+FORMAT = "%(asctime)s: %(name)s:%(lineno)d (%(process)d/%(threadName)s) - %(levelname)s - %(message)s"
+logging.basicConfig(level=logging.INFO, format=FORMAT)
+logger = logging.getLogger(__name__)
+
 
 parser = ArgumentParser(description="Generate article based on input domain and topic using ngram model")
 parser.add_argument('--filters', '-f', action='append',
@@ -29,7 +39,7 @@ parser.add_argument('--testDir', '-T', action='store',
 
 args = parser.parse_args()
 
-print("args: %s" % args)
+logger.info("args: %s" % args)
 
 filters = []
 if args.filters:
@@ -53,7 +63,7 @@ for _ in range(maxLength):
     cState = mv.generate(cState)
     cWord = cState[-1]
     if cWord == CONST_END_WORD:
-        print("reached end of the article")
+        logger.info("reached end of the article")
         break
 
     article.append(cState[-1])
@@ -75,7 +85,7 @@ if args.perplexity:
                     articleText = cData.get("article", None)
                     pvaluesList.append(computePerplexity(articleText, ng))
 
-    print("pvaluesList: %s" % pvaluesList)
-    print("max perplexity: %s" % max(pvaluesList))
-    print("mean perplexity: %s" % (sum(pvaluesList)/len(pvaluesList)))
-    print("min perplexity: %s" % min(pvaluesList))
+    logger.info("pvaluesList: %s" % pvaluesList)
+    logger.info("max perplexity: %s" % max(pvaluesList))
+    logger.info("mean perplexity: %s" % (sum(pvaluesList)/len(pvaluesList)))
+    logger.info("min perplexity: %s" % min(pvaluesList))
