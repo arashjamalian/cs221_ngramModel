@@ -1,4 +1,5 @@
 import random
+import math
 
 CONST_START_WORD = "__s__"
 CONST_END_WORD = "__e__"
@@ -44,7 +45,7 @@ def computePerplexity(testSentance, ng):
     sumProb = 0.0
     for ngram in ngramList:
         if ngram in ng.nGramProb:
-            sumProb += ng.nGramProb[ngram]
+            sumProb += math.log((ng.nGramProb[ngram]), 2)
 
     modelPerplexity = 2 ** (-1 / len(ngramList) * sumProb)
     return modelPerplexity
