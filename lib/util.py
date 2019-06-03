@@ -43,9 +43,17 @@ def computePerplexity(testSentance, ng):
     textList = testSentance.strip().split(" ")
     ngramList = [ngramWindow(segWord, ng.windowSize) for segWord in sliding(textList, ng.windowSize)]
     sumProb = 0.0
+    #minProbList = [mProb for _, mProb in ng.nGramProb.items()]
+    notExistProb = 1.0 / 1000.0
     for ngram in ngramList:
         if ngram in ng.nGramProb:
             sumProb += math.log((ng.nGramProb[ngram]), 2)
+            #sumProb *= 1.0 / ng.nGramProb[ngram]
+        else:
+            sumProb += math.log(notExistProb, 2)
+            #sumProb *= 1.0 / notExistProb
 
+    #print("nCount : %s cCount: %s" % (notCount, cCount))
     modelPerplexity = 2 ** (-1 / len(ngramList) * sumProb)
+    #modelPerplexity = sumProb ** (1.0 / float(len(ngramList)))
     return modelPerplexity

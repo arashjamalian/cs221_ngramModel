@@ -81,6 +81,19 @@ class NGramModel(object):
                 self.nGramPdf[ngramKey][domainTopicKey].append((float(ngramCount) / totalCount, ngram[-1]))
                 self.nGramProb[ngram] += float(ngramCount) / totalCount
 
+        #self._normalizeprob()
+
+    def _normalizeprob(self):
+        probListTotal = float(sum([mProb for _, mProb in self.nGramProb.items()]))
+        for cNgram, pVal in self.nGramProb.items():
+            self.nGramProb[cNgram] = pVal / probListTotal
+
+        #for cNgram in self.nGramPdf:
+        #    for topic, pValList in self.nGramPdf[cNgram].items():
+        #        print(pValList)
+        #        self.nGramProb[cNgram][topic] = [ap / probListTotal for ap in pValList]
+
+
     def countNgrams(self, baseDir="."):
         self.dataDir = baseDir
         self._count()
