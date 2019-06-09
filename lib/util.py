@@ -41,17 +41,21 @@ def weightSample(weightDict):
 
 def computePerplexity(testSentance, ng):
     textList = testSentance.strip().split(" ")
-    ngramList = [ngramWindow(segWord, ng.windowSize) for segWord in sliding(textList, ng.windowSize)]
+    widnowSize = ng.windowSizeList[-1]
+    ngramList = [ngramWindow(segWord, widnowSize) for segWord in sliding(textList, widnowSize)]
     sumProb = 0.0
-    #minProbList = [mProb for _, mProb in ng.nGramProb.items()]
-    notExistProb = 1.0 / 1000.0
+    notExistProb = ng.kSmoothingFactor / ng.vocabSize
     for ngram in ngramList:
-        if ngram in ng.nGramProb:
-            sumProb += math.log((ng.nGramProb[ngram]), 2)
-            #sumProb *= 1.0 / ng.nGramProb[ngram]
+        for wIndex, wSize in enumerate(reversed(ng.windowSizeList)):
+            #wSize = widnowSize
+            if ngram[wIndex:] in ng.nGramProb[wSize]:
+                sumProb += math.log((ng.nGramProb[wSize][ngram[wIndex:]]), 2)
+                #sumProb *= 1.0 / ng.nGramProb[ngram]
+                break
+
         else:
             sumProb += math.log(notExistProb, 2)
-            #sumProb *= 1.0 / notExistProb
+            # sumProb *= 1.0 / notExistProb
 
     #print("nCount : %s cCount: %s" % (notCount, cCount))
     modelPerplexity = 2 ** (-1 / len(ngramList) * sumProb)

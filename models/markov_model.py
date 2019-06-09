@@ -8,8 +8,8 @@ class MarkovModel(object):
     def __init__(self, nGramModel, windowSize, domain, topic):
         self.domain = domain
         self.topic = topic
-        self.nGramModel = nGramModel
         self.windowSize = windowSize
+        self.nGramModel = nGramModel[self.windowSize]
 
     def startState(self):
         return [CONST_START_WORD for _ in range(self.windowSize)]
@@ -41,20 +41,25 @@ class MarkovModel(object):
         # Given we are generating n-grams from our trained mode,
         # we should not reach the case that ngram is not found
         if ngramKey not in self.nGramModel:
+            print("ngramKey: %s" % list(ngramKey))
+            print("nGramModel: %s" % self.nGramModel)
             raise Exception("Generated article should not have unknown ngrams")
 
         # To generate content with specific domain/topic, we search
         # for the ngram only in ngrams from same domain/topic.
         # If the model  is not trained for the specified domain/topic,
         # we use ngrams from all the trained domains/topics.
-        biasedDomainTopic = (self.domain, self.topic)
-        if biasedDomainTopic in self.nGramModel[ngramKey]:
-            for weight, currWord in self.nGramModel[ngramKey][biasedDomainTopic]:
-                cDict.update({currWord: weight})
-        else:
-            for domainTopic in self.nGramModel[ngramKey]:
-                for weight, currWord in self.nGramModel[ngramKey][domainTopic]:
-                    cDict.update({currWord: weight})
+        #biasedDomainTopic = (self.domain, self.topic)
+        #if biasedDomainTopic in self.nGramModel[ngramKey]:
+        #    for weight, currWord in self.nGramModel[ngramKey][biasedDomainTopic]:
+        #        cDict.update({currWord: weight})
+        #else:
+        #    for domainTopic in self.nGramModel[ngramKey]:
+        #        for weight, currWord in self.nGramModel[ngramKey][domainTopic]:
+        #            cDict.update({currWord: weight})
+
+        for weight, currWord in self.nGramModel[ngramKey]:
+            cDict.update({currWord: weight})
 
         sampleWord = weightSample(cDict)
         # construct next state
