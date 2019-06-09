@@ -65,7 +65,9 @@ ngTypeCount = [key for key, _ in ng.ngramCount.items()]
 
 print("vocab size: %s" % ng.vocabSize)
 print("ngram types: %s" % len(ngTypeCount))
-print("size of ngram model: %s" % sys.getsizeof(nGramModel))
+for size in windowSizeList:
+    print("size of ngram model %s: %s" % (size, sys.getsizeof(ng.nGramProb[size])))
+
 print("Time elapsed: %s" % str(datetime.timedelta(seconds=time.time()-startTime)))
 
 if args.generate:

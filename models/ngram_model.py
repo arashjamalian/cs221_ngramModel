@@ -12,9 +12,6 @@ logger = logging.getLogger(__name__)
 class NGramModel(object):
     def __init__(self, windowSizeList, generatePdf=False, filters=[]):
         self.windowSizeList = windowSizeList
-        if 1 not in self.windowSizeList:
-            self.windowSizeList.append(1)
-
         self.ngramCount = {}
         self.ntotalCounts = {}
         self.ngramDomainTopicDict = {}
@@ -28,12 +25,14 @@ class NGramModel(object):
         self.generatePdf = generatePdf
         #self.kSmoothingFactor = 0.0001
 
-    def _count(self):
-        windowSizeList = self.windowSizeList
-        # Needed to get vocab size
-        if 1 not in self.windowSizeList:
-            windowSizeList.append(1)
+    def _getVocabSize(self):
+        if 1 in self.windowSizeList:
+            self.vocabSize = sum([wordCount for _, wordCount in self.ngramCount[1].items()])
+        else:
+            self._count([1])
+            self.vocabSize = sum([wordCount for _, wordCount in self.ngramCount[1].items()])
 
+    def _count(self, windowSizeList, generatePdf=False):
         for wSize in windowSizeList:
             ngramCount = collections.Counter()
             ntotalCounts = collections.Counter()
@@ -54,7 +53,7 @@ class NGramModel(object):
 
                         if filename.endswith('.json'):
                             fullName = os.path.join(currDir, filename)
-                            logger.debug("filename : %s" % fullName)
+                            #logger.info("filename : %s" % fullName)
                             with open(fullName, "r") as f:
                                 cData = json.load(f)
                                 articleText = cData.get("article", None)
@@ -74,13 +73,14 @@ class NGramModel(object):
                             lastWord = prevWord[1:] + [CONST_END_WORD]
                             ngramList.append(tuple(lastWord))
 
-                            #for ngram in ngramList:
-                            #    ngramKey = ngram[:-1]
-                            #    if ngramKey not in self.ngramDomainTopicDict:
-                            #        self.ngramDomainTopicDict[ngramKey] = [domainTopicKey]
-                            #        continue
-                            #
-                            #    self.ngramDomainTopicDict[ngramKey].append(domainTopicKey)
+                            if generatePdf:
+                                for ngram in ngramList:
+                                    ngramKey = ngram[:-1]
+                                    if ngramKey not in self.ngramDomainTopicDict:
+                                        self.ngramDomainTopicDict[ngramKey] = [domainTopicKey]
+                                        continue
+
+                                    self.ngramDomainTopicDict[ngramKey].append(domainTopicKey)
 
                             ngramCount.update(ngramList)
                             if wSize != 1:
@@ -89,8 +89,6 @@ class NGramModel(object):
             self.ngramCount[wSize] = ngramCount
             if wSize != 1:
                 self.ntotalCounts[wSize] = ntotalCounts
-
-        self.vocabSize = sum([wordCount for _, wordCount in self.ngramCount[1].items()])
 
     def _nGramProb(self):
         vSizeFraction = self.kSmoothingFactor * float(self.vocabSize)
@@ -104,50 +102,41 @@ class NGramModel(object):
                 else:
                     totalCount = self.vocabSize
 
-                if self.generatePdf:
-                    ngramKey = ngram[:-1]
-                    if ngramKey not in self.nGramPdf:
-                        nGramPdf[ngramKey] = [(float(ngramCount) / totalCount, ngram[-1])]
-                        continue
-
-                    nGramPdf[ngramKey].append((float(ngramCount) / totalCount, ngram[-1]))
-
-                #ngramKey = ngram[:-1]
-                #for domainTopicKey in self.ngramDomainTopicDict.get(ngramKey, []):
+                #if self.generatePdf:
+                #    ngramKey = ngram[:-1]
                 #    if ngramKey not in self.nGramPdf:
-                #        self.nGramPdf[ngramKey] = {domainTopicKey: [(float(ngramCount) / totalCount, ngram[-1])]}
+                #        nGramPdf[ngramKey] = [(float(ngramCount) / totalCount, ngram[-1])]
                 #        continue
                 #
-                #    if domainTopicKey not in self.nGramPdf[ngramKey]:
-                #        self.nGramPdf[ngramKey][domainTopicKey] = [(float(ngramCount) / totalCount, ngram[-1])]
-                #
-                #    self.nGramPdf[ngramKey][domainTopicKey].append((float(ngramCount) / totalCount, ngram[-1]))
+                #    nGramPdf[ngramKey].append((float(ngramCount) / totalCount, ngram[-1]))
+
+                if self.generatePdf:
+                    ngramKey = ngram[:-1]
+                    for domainTopicKey in self.ngramDomainTopicDict.get(ngramKey, []):
+                        if ngramKey not in self.nGramPdf:
+                            nGramPdf[ngramKey] = {domainTopicKey: [(float(ngramCount) / totalCount, ngram[-1])]}
+                            continue
+
+                        if domainTopicKey not in self.nGramPdf[ngramKey]:
+                            nGramPdf[ngramKey][domainTopicKey] = [(float(ngramCount) / totalCount, ngram[-1])]
+
+                        nGramPdf[ngramKey][domainTopicKey].append((float(ngramCount) / totalCount, ngram[-1]))
 
                 #self.nGramProb[ngram] += float(ngramCount) / totalCount
                 nGramProb[ngram] += (float(ngramCount) + self.kSmoothingFactor) / (vSizeFraction + totalCount)
 
             self.nGramProb[wSize] = nGramProb
             self.nGramPdf[wSize] = nGramPdf
-            #self._normalizeprob()
-
-    def _normalizeprob(self):
-        probListTotal = float(sum([mProb for _, mProb in self.nGramProb.items()]))
-        for cNgram, pVal in self.nGramProb.items():
-            self.nGramProb[cNgram] = pVal / probListTotal
-
-        #for cNgram in self.nGramPdf:
-        #    for topic, pValList in self.nGramPdf[cNgram].items():
-        #        print(pValList)
-        #        self.nGramProb[cNgram][topic] = [ap / probListTotal for ap in pValList]
-
 
     def countNgrams(self, domainList, baseDir="."):
         self.baseDir = baseDir
         self.domainList = domainList
-        self._count()
+        logger.debug("get count")
+        self._count(self.windowSizeList, self.generatePdf)
+        logger.debug("get vocab size")
+        self._getVocabSize()
 
     def generateModel(self):
         self._nGramProb()
         return self.nGramPdf
-        #return self.nGramProb
 

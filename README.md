@@ -2,7 +2,11 @@ compatible with python3.4 and python3.7
 
 Example run command:
 
-python3.4 generate_article.py -f "all" -d foxnews.com -d cnn.com -D cnn.com -t EDUCATION  -b /tmp/trainData/ -T /tmp/testData/cnn.com -s 1 -s 2 -s 3 -p
+To generate articles from CNN on EDUCATION: 
+python3.4 generate_article.py -f EDUCATION -d cnn.com -D cnn.com -t EDUCATION -b /tmp/trainData/ -s 3 -g
+
+To calculate perplexity on model trained with both CNN and FOX articles:
+python3.4 generate_article.py -f all -d foxnews.com -d cnn.com -D cnn.com -t EDUCATION -b /tmp/trainData/ -T /tmp/testData/cnn.com -s 1 -s 2 -s 3 -p
 
 arguments:
   -h, --help            show this help message and exit

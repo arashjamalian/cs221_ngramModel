@@ -49,17 +49,17 @@ class MarkovModel(object):
         # for the ngram only in ngrams from same domain/topic.
         # If the model  is not trained for the specified domain/topic,
         # we use ngrams from all the trained domains/topics.
-        #biasedDomainTopic = (self.domain, self.topic)
-        #if biasedDomainTopic in self.nGramModel[ngramKey]:
-        #    for weight, currWord in self.nGramModel[ngramKey][biasedDomainTopic]:
-        #        cDict.update({currWord: weight})
-        #else:
-        #    for domainTopic in self.nGramModel[ngramKey]:
-        #        for weight, currWord in self.nGramModel[ngramKey][domainTopic]:
-        #            cDict.update({currWord: weight})
+        biasedDomainTopic = (self.domain, self.topic)
+        if biasedDomainTopic in self.nGramModel[ngramKey]:
+            for weight, currWord in self.nGramModel[ngramKey][biasedDomainTopic]:
+                cDict.update({currWord: weight})
+        else:
+            for domainTopic in self.nGramModel[ngramKey]:
+                for weight, currWord in self.nGramModel[ngramKey][domainTopic]:
+                    cDict.update({currWord: weight})
 
-        for weight, currWord in self.nGramModel[ngramKey]:
-            cDict.update({currWord: weight})
+        #for weight, currWord in self.nGramModel[ngramKey]:
+        #    cDict.update({currWord: weight})
 
         sampleWord = weightSample(cDict)
         # construct next state
