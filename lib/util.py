@@ -48,6 +48,7 @@ def computePerplexity(testSentance, ng):
     for ngram in ngramList:
         for wIndex, wSize in enumerate(reversed(ng.windowSizeList)):
             #wSize = widnowSize
+            #print("wSize: %s" % wSize)
             if ngram[wIndex:] in ng.nGramProb[wSize]:
                 sumProb += math.log((ng.nGramProb[wSize][ngram[wIndex:]]), 2)
                 #sumProb *= 1.0 / ng.nGramProb[ngram]

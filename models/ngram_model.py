@@ -11,7 +11,10 @@ logger = logging.getLogger(__name__)
 
 class NGramModel(object):
     def __init__(self, windowSizeList, generatePdf=False, filters=[]):
-        self.windowSizeList = [1, 2, 3]
+        self.windowSizeList = windowSizeList
+        if 1 not in self.windowSizeList:
+            self.windowSizeList.append(1)
+
         self.ngramCount = {}
         self.ntotalCounts = {}
         self.ngramDomainTopicDict = {}
@@ -26,7 +29,12 @@ class NGramModel(object):
         #self.kSmoothingFactor = 0.0001
 
     def _count(self):
-        for wSize in self.windowSizeList:
+        windowSizeList = self.windowSizeList
+        # Needed to get vocab size
+        if 1 not in self.windowSizeList:
+            windowSizeList.append(1)
+
+        for wSize in windowSizeList:
             ngramCount = collections.Counter()
             ntotalCounts = collections.Counter()
             for domain in self.domainList:
